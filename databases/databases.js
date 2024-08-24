@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://0.0.0.0:27017/autodesk')
+mongoose.connect('mongodb://103.181.183.140:27017/autodex')
 
 const db = mongoose.connection
 
