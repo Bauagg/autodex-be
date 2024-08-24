@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://103.181.183.140:27017/autodex')
+mongoose.connect('mongodb://160.19.166.181:27017/autodex')
 
 const db = mongoose.connection
 
