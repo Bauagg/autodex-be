@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
 
-mongoose.connect('mongodb://160.19.166.181:27017/autodex')
+mongoose.connect(`${process.env.URL_DATABASES}`)
 
 const db = mongoose.connection
 
