@@ -1,6 +1,6 @@
 const express = require('express');
 const formidable = require('express-formidable');
-const { getPublicToken, listObjects, uploadObject, translateObject, getManifest, urnify } = require('../controler/viewer');
+const { getPublicToken, listObjects, uploadObject, translateObject, getManifest, urnify, deleteObject } = require('../controler/viewer');
 
 const router = express.Router();
 
@@ -61,6 +61,15 @@ router.post('/models', formidable({ maxFileSize: Infinity }), async function (re
             name: obj.objectKey,
             urn: urnify(obj.objectId)
         });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.delete('/models/:objectName', async function (req, res, next) {
+    try {
+        const result = await deleteObject(req.params.objectName);
+        res.json({ message: 'Model deleted successfully', result });
     } catch (err) {
         next(err);
     }

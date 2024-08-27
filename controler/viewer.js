@@ -99,7 +99,13 @@ const service = {
         }
     },
 
-    urnify: (id) => Buffer.from(id).toString('base64').replace(/=/g, '')
+    urnify: (id) => Buffer.from(id).toString('base64').replace(/=/g, ''),
+
+    deleteObject: async (objectName) => {
+        const { access_token } = await service.getInternalToken();
+        const result = await ossClient.deleteObject(access_token, APS_BUCKET, objectName);
+        return result;
+    },
 };
 
 module.exports = service;
