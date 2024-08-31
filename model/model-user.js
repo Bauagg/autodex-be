@@ -23,6 +23,12 @@ const modelUser = new mongoose.Schema({
     konfirmasi_password: {
         type: String,
         required: [true, 'password harus di isi']
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        message: `{VALUE} yang kamu masukan tidak valid`,
+        default: 'user'
     }
 })
 

@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', require('./routes/router-user'));
 app.use('/api', require('./routes/router-viewer'))
+app.use('/api', require('./routes/router-projek'))
 
 app.use(require('./middleware/error-middleware'));
 

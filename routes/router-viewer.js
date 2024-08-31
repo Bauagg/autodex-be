@@ -1,6 +1,9 @@
 const express = require('express');
 const formidable = require('express-formidable');
-const { getPublicToken, listObjects, uploadObject, translateObject, getManifest, urnify, deleteObject } = require('../controler/viewer');
+const { getPublicToken, uploadObject, translateObject, getManifest, urnify, deleteObject } = require('../controler/viewer');
+const FileProjek = require('../model/model-file');
+const autorization = require('../middleware/autorization')
+
 
 const router = express.Router();
 
@@ -12,13 +15,20 @@ router.get('/auth/token', async function (req, res, next) {
     }
 });
 
-router.get('/models', async function (req, res, next) {
+router.get('/models/:id', autorization, async function (req, res, next) {
     try {
-        const objects = await listObjects();
-        res.json(objects.map(o => ({
-            name: o.objectKey,
-            urn: urnify(o.objectId)
-        })));
+        const datas = await FileProjek.find({ folder_id: req.params.id, user_id: req.user.id })
+            .populate({
+                path: "folder_id",
+                populate: "user_id"
+            })
+
+        const total_file = datas.length
+        res.status(200).json({
+            message: 'get data success',
+            total_file,
+            datas
+        });
     } catch (err) {
         next(err);
     }
@@ -49,27 +59,40 @@ router.get('/models/:urn/status', async function (req, res, next) {
 });
 
 router.post('/models', formidable({ maxFileSize: Infinity }), async function (req, res, next) {
-    const file = req.files['modelFile'];
-    if (!file) {
-        res.status(400).send('The required field ("model-file") is missing.');
-        return;
-    }
     try {
+        const { folder_id, user_id } = req.fields
+
+        const file = req.files['modelFile'];
+        if (!file) {
+            res.status(400).send('The required field ("model-file") is missing.');
+            return;
+        }
+
         const obj = await uploadObject(file.name, file.path);
         await translateObject(urnify(obj.objectId), req.fields['model-zip-entrypoint']);
-        res.json({
-            name: obj.objectKey,
+
+        const data = await FileProjek.create({
+            folder_id,
+            user_id,
+            nama: obj.objectKey,
             urn: urnify(obj.objectId)
+        })
+        res.status(201).json({
+            data
         });
     } catch (err) {
         next(err);
     }
 });
 
-router.delete('/models/:objectName', async function (req, res, next) {
+router.delete('/models/:id', autorization, async function (req, res, next) {
     try {
-        const result = await deleteObject(req.params.objectName);
-        res.json({ message: 'Model deleted successfully', result });
+        const data = await FileProjek.findOne({ _id: req.params.id, user_id: req.user.id })
+        if (!data) return res.status(404).json({ message: 'data Not FOund' })
+
+        await deleteObject(data.nama);
+        await FileProjek.deleteOne({ _id: data._id, user_id: req.user.id })
+        res.status(200).json({ message: 'Model deleted successfully' });
     } catch (err) {
         next(err);
     }
